@@ -3,7 +3,7 @@
 
 #include "clay.h"
 
-#include "render.h"
+#include "graph.h"
 
 #define COMPONENT(name, ...) __COMPONENT_ ## name ## __(__VA_ARGS__)
 
@@ -12,6 +12,6 @@ typedef enum {
     ELEMENT_TEXT_LABEL,
 } CustomElementType;
 
-void COMPONENT(ComplexGraph, RenderingContext *rctx);
+void COMPONENT(ComplexGraph, ComplexGraph *graph);
 
 #endif

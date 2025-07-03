@@ -4,6 +4,8 @@
 #include <CL/cl.h>
 #include <CL/cl_platform.h>
 
+#define setKernelArg(kernel, idx, var) clSetKernelArg(kernel, idx, sizeof var, &(var))
+
 typedef struct {
     cl_platform_id platform;
     cl_device_id device;

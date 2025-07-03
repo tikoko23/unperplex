@@ -1,12 +1,13 @@
 #include "components.h"
+#include "graph.h"
 
-void COMPONENT(ComplexGraph, RenderingContext *rctx) {
+void COMPONENT(ComplexGraph, ComplexGraph *graph) {
     CLAY({
-        .userData = rctx,
+        .userData = graph,
         .custom = { (void *)ELEMENT_COMPLEX_GRAPH },
         .layout.sizing = {
-            .width = rctx->width,
-            .height = rctx->height,
+            .width = graph->rctx.width,
+            .height = graph->rctx.height,
         },
     });
 }

@@ -23,7 +23,6 @@ RenderingContext rctxNew(const CL_Data *cl, size_t w, size_t h);
 void rctxFree(RenderingContext *ctx);
 
 cl_int rctxRedrawBuffer(RenderingContext *ctx, cl_kernel kernel);
-Texture2D rctxGetSurface(RenderingContext *ctx);
 
 void rctxRecalculateBufsize(RenderingContext *rctx);
 cl_int rctxResize(RenderingContext *ctx, size_t w, size_t h);

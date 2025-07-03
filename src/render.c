@@ -5,6 +5,7 @@
 #include <CL/cl.h>
 #include "clay.h"
 #include "components.h"
+#include "graph.h"
 #include "raylib.h"
 
 #include "render.h"
@@ -86,10 +87,6 @@ cl_int rctxRedrawBuffer(RenderingContext *ctx, cl_kernel kernel) {
     return CL_SUCCESS;
 }
 
-Texture2D rctxGetSurface(RenderingContext *ctx) {
-    return ctx->gpu_ref;
-}
-
 void rctxRecalculateBufsize(RenderingContext *rctx) {
     rctx->bufsize = rctx->width * rctx->height * N_CHANNELS;
 }
@@ -157,8 +154,15 @@ void renderClayCommands(const Clay_RenderCommandArray *commands) {
         case CLAY_RENDER_COMMAND_TYPE_CUSTOM: {
             switch ((uintptr_t)command->renderData.custom.customData) {
             case ELEMENT_COMPLEX_GRAPH: {
-                RenderingContext *rctx = command->userData;
-                DrawTexture(rctxGetSurface(rctx), bounds.x, bounds.y, WHITE);
+                ComplexGraph *graph = command->userData;
+                cl_int err = complexGraphRenderFrame(graph);
+                if (err) {
+                    fprintf(stderr, "OpenCL: %d\n", err);
+                    DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, RED);
+                } else {
+                    DrawTexture(complexGraphGetSurface(graph), bounds.x, bounds.y, WHITE);
+                }
+
                 break;
             }
             }

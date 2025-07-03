@@ -3,22 +3,16 @@
 #include <stdio.h>
 
 #include <CL/cl.h>
+#include "etc.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "clay.h"
 
 #include "clinit.h"
 #include "components.h"
+#include "graph.h"
 #include "program.h"
 #include "render.h"
-
-#define setKernelArg(kernel, idx, var) clSetKernelArg(kernel, idx, sizeof var, &(var))
-
-typedef enum {
-    COLOR_CONTINUOUS = 0,
-    COLOR_DISCRETE,
-    COLOR_N_MODES,
-} ColorMode;
 
 static Vector2 globalMousePos(cl_float2 offset, cl_uint window_width, cl_uint window_height, float scale) {
     Vector2 mouse = GetMousePosition();
@@ -99,14 +93,17 @@ int main(void) {
 
     InitWindow(target_width, target_height, "idk");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
+    SetTargetFPS(144);
 
-    RenderingContext rctx = rctxNew(&cl, 640, 480);
+    ComplexGraph graph = {
+        .rctx = rctxNew(&cl, 640, 480),
+        .scale = 1.0f,
+        .render = render_kernel,
+        .prog = prog,
+    };
 
-    cl_uint cmode = COLOR_CONTINUOUS;
     float movement_speed = 32.0f;
     float zoom_speed = 8.0f;
-    float scale = 1.0f;
-    cl_float2 offset = { 0, 0 };
 
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_F5)) {
@@ -116,44 +113,31 @@ int main(void) {
             }
         }
 
-        float movement_mul = GetFrameTime() / sqrtf(scale);
-
-        if (IsKeyDown(KEY_LEFT)) {
-            offset.x -= movement_speed * movement_mul;
-        }
-
-        if (IsKeyDown(KEY_RIGHT)) {
-            offset.x += movement_speed * movement_mul;
-        }
-
-        if (IsKeyDown(KEY_DOWN)) {
-            offset.y -= movement_speed * movement_mul;
-        }
-
-        if (IsKeyDown(KEY_UP)) {
-            offset.y += movement_speed * movement_mul;
-        }
-
         if (IsKeyPressed(KEY_M)) {
-            ++cmode;
-            cmode %= COLOR_N_MODES;
+            complexGraphCycleMode(&graph, 1);
         }
 
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            Vector2 d = GetMouseDelta();
-            offset.x -= d.x;
-            offset.y += d.y;
-        }
+        Vector2 smooth_translation = getVectorInput(KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_UP);
+        Vector2 snap_translation = Vector2Multiply(
+            (Vector2) { -1.0f, 1.0f },
+            Vector2Scale(
+                GetMouseDelta(),
+                IsMouseButtonDown(MOUSE_BUTTON_LEFT)
+            )
+        );
+
+        complexGraphTranslate(&graph, smooth_translation, true);
+        complexGraphTranslate(&graph, snap_translation, false);
 
         cl_uint window_width = GetScreenWidth();
         cl_uint window_height = GetScreenHeight();
 
         float key_zoom = (IsKeyDown(KEY_X) - IsKeyDown(KEY_Z)) * zoom_speed * GetFrameTime();
         float dzoom = (key_zoom + GetMouseWheelMove()) * 0.1f;
-        scale *= powf(2.0f, dzoom);
+        complexGraphZoomBy(&graph, dzoom);
 
         if (IsWindowResized()) {
-            rctxResize(&rctx, window_width - 100, window_height);
+            complexGraphResizeOutput(&graph, window_width, window_height);
         }
 
         Clay_SetLayoutDimensions((Clay_Dimensions) { window_width, window_height });
@@ -163,40 +147,20 @@ int main(void) {
         Clay_BeginLayout();
 
         CLAY() {
-            COMPONENT(ComplexGraph, &rctx);
+            COMPONENT(ComplexGraph, &graph);
         }
 
         Clay_RenderCommandArray commands = Clay_EndLayout();
 
         BeginDrawing();
-
         ClearBackground(BLACK);
-
-        cl_uint truncated_ctx_w = rctx.width; 
-        cl_uint truncated_ctx_h = rctx.width; 
-
-        setKernelArg(render_kernel, 1, truncated_ctx_w);
-        setKernelArg(render_kernel, 2, truncated_ctx_h);
-        setKernelArg(render_kernel, 3, offset);
-        setKernelArg(render_kernel, 4, scale);
-        setKernelArg(render_kernel, 5, cmode);
-
-        if ((err = rctxRedrawBuffer(&rctx, render_kernel))) {
-            fprintf(stderr, "rctxRedrawBuffer: OpenCL: %d\n", err);
-            break;
-        }
-
         renderClayCommands(&commands);
-
         EndDrawing();
     }
 
-    rctxFree(&rctx);
+    complexGraphFree(&graph);
 
     CloseWindow();
-
-    clReleaseProgram(prog);
-    clReleaseKernel(render_kernel);
     CL_DataFree(&cl);
 
     free(clay_mem);
