@@ -1,7 +1,6 @@
 #ifndef CL_INIT_H
 #define CL_INIT_H
 
-#define CL_TARGET_OPENCL_VERSION 300
 #include <CL/cl.h>
 #include <CL/cl_platform.h>
 

@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-#define CL_TARGET_OPENCL_VERSION 300
 #include <CL/cl.h>
 #include <raylib.h>
 
