@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include <CL/cl.h>
-#include <raylib.h>
+#include "raylib.h"
 
 #include "clinit.h"
 

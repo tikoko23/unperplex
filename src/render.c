@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include <CL/cl.h>
-#include <raylib.h>
+#include "raylib.h"
 
 #include "render.h"
 #include "clinit.h"
