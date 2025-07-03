@@ -1,7 +1,10 @@
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
 #include <CL/cl.h>
+#include "clay.h"
+#include "components.h"
 #include "raylib.h"
 
 #include "render.h"
@@ -77,7 +80,7 @@ cl_int rctxRedrawBuffer(RenderingContext *ctx, cl_kernel kernel) {
         return err;
     }
 
-    uint8_t (*img)[ctx->height][3] = ctx->framebuffer.data;
+    uint8_t (*img)[ctx->height][N_CHANNELS] = ctx->framebuffer.data;
     UpdateTexture(ctx->gpu_ref, img);
 
     return CL_SUCCESS;
@@ -114,4 +117,57 @@ cl_int rctxResize(RenderingContext *ctx, size_t w, size_t h) {
     updateFBTexture(ctx);
 
     return CL_SUCCESS;
+}
+
+static Color clayToRaylibColor(Clay_Color color) {
+    return (Color) { color.r, color.g, color.b, color.a };
+}
+
+void renderClayCommands(const Clay_RenderCommandArray *commands) {
+    for (size_t i = 0; i < commands->length; ++i) {
+        Clay_RenderCommand *command = commands->internalArray + i;
+
+        Clay_BoundingBox bounds = command->boundingBox;
+        Rectangle bounds_rect = {
+            .x = bounds.x,
+            .y = bounds.y,
+            .width = bounds.width,
+            .height = bounds.height,
+        };
+
+        switch (command->commandType) {
+        // Only uses the top left radius
+        case CLAY_RENDER_COMMAND_TYPE_RECTANGLE: {
+            Clay_RectangleRenderData *rect = &command->renderData.rectangle;
+            if (rect->cornerRadius.topLeft == 0) {
+                DrawRectangleRec(bounds_rect, clayToRaylibColor(rect->backgroundColor));               
+            } else {
+                float rad = rect->cornerRadius.topLeft * 2.0f / fminf(bounds.width, bounds.height);
+                DrawRectangleRounded(bounds_rect, rad, 8, clayToRaylibColor(rect->backgroundColor));
+            }
+
+            break;
+        }
+        case CLAY_RENDER_COMMAND_TYPE_SCISSOR_START:
+            BeginScissorMode(bounds.x, bounds.y, bounds.width, bounds.height);
+            break;
+        case CLAY_RENDER_COMMAND_TYPE_SCISSOR_END:
+            EndScissorMode();
+            break;
+        case CLAY_RENDER_COMMAND_TYPE_CUSTOM: {
+            switch ((uintptr_t)command->renderData.custom.customData) {
+            case ELEMENT_COMPLEX_GRAPH: {
+                RenderingContext *rctx = command->userData;
+                DrawTexture(rctxGetSurface(rctx), bounds.x, bounds.y, WHITE);
+                break;
+            }
+            }
+
+            break;
+        }
+        default:
+            puts("bruh");
+            break;
+        }
+    }
 }

@@ -30,8 +30,8 @@ include_directories("include")
 include_directories("external/clay")
 add_library(clay STATIC "external/clay.c")
 
-add_subdirectory("external/ctl")
-add_subdirectory("external/raylib")
+add_subdirectory("external/ctl" EXCLUDE_FROM_ALL)
+add_subdirectory("external/raylib" EXCLUDE_FROM_ALL)
 include_directories("external/raylib/src")
 
 file(GLOB_RECURSE EXEC_SOURCES src/**.c)

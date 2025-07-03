@@ -3,12 +3,16 @@
 #include <stdio.h>
 
 #include <CL/cl.h>
-#include <raylib.h>
-#include <raymath.h>
+#include "raylib.h"
+#include "raymath.h"
+#include "clay.h"
 
 #include "clinit.h"
+#include "components.h"
 #include "program.h"
 #include "render.h"
+
+#define setKernelArg(kernel, idx, var) clSetKernelArg(kernel, idx, sizeof var, &(var))
 
 typedef enum {
     COLOR_CONTINUOUS = 0,
@@ -51,7 +55,19 @@ static cl_int loadDefaultProgram(CL_Data *cl, cl_program *prog, cl_kernel *kerne
     return CL_SUCCESS;
 }
 
+static void clayErrHandler(Clay_ErrorData err) {
+    fprintf(stderr, "Clay: %.*s\n", err.errorText.length, err.errorText.chars);
+}
+
 int main(void) {
+    const size_t target_width = 640;
+    const size_t target_height = 480;
+
+    size_t clay_memsize = Clay_MinMemorySize(); 
+    void *clay_mem = malloc(clay_memsize);
+    Clay_Arena clay_arena = Clay_CreateArenaWithCapacityAndMemory(clay_memsize, clay_mem);
+    Clay_Initialize(clay_arena, (Clay_Dimensions) { target_width, target_height }, (Clay_ErrorHandler) { clayErrHandler });
+
     cl_int err;
     CL_Data cl;
     CL_ContextOptions ctx_opt = {
@@ -80,9 +96,6 @@ int main(void) {
     }
 
     SetTraceLogLevel(LOG_WARNING);
-
-    const size_t target_width = 640;
-    const size_t target_height = 480;
 
     InitWindow(target_width, target_height, "idk");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
@@ -140,34 +153,51 @@ int main(void) {
         scale *= powf(2.0f, dzoom);
 
         if (IsWindowResized()) {
-            rctxResize(&rctx, window_width, window_height);
+            rctxResize(&rctx, window_width - 100, window_height);
         }
+
+        Clay_SetLayoutDimensions((Clay_Dimensions) { window_width, window_height });
+        Clay_SetPointerState((Clay_Vector2) { GetMouseX(), GetMouseY() }, IsMouseButtonDown(MOUSE_BUTTON_LEFT));
+        Clay_UpdateScrollContainers(false, (Clay_Vector2) { GetMouseWheelMoveV().x, GetMouseWheelMoveV().y }, GetFrameTime());
+
+        Clay_BeginLayout();
+
+        CLAY() {
+            COMPONENT(ComplexGraph, &rctx);
+        }
+
+        Clay_RenderCommandArray commands = Clay_EndLayout();
 
         BeginDrawing();
 
         ClearBackground(BLACK);
 
-        clSetKernelArg(render_kernel, 1, sizeof window_width, &window_width);
-        clSetKernelArg(render_kernel, 2, sizeof window_height, &window_height);
-        clSetKernelArg(render_kernel, 3, sizeof offset, &offset);
-        clSetKernelArg(render_kernel, 4, sizeof scale, &scale);
-        clSetKernelArg(render_kernel, 5, sizeof cmode, &cmode);
+        cl_uint truncated_ctx_w = rctx.width; 
+        cl_uint truncated_ctx_h = rctx.width; 
+
+        setKernelArg(render_kernel, 1, truncated_ctx_w);
+        setKernelArg(render_kernel, 2, truncated_ctx_h);
+        setKernelArg(render_kernel, 3, offset);
+        setKernelArg(render_kernel, 4, scale);
+        setKernelArg(render_kernel, 5, cmode);
 
         if ((err = rctxRedrawBuffer(&rctx, render_kernel))) {
             fprintf(stderr, "rctxRedrawBuffer: OpenCL: %d\n", err);
             break;
         }
 
-        DrawTexture(rctxGetSurface(&rctx), 0, 0, WHITE);
+        renderClayCommands(&commands);
 
         EndDrawing();
     }
 
-    CloseWindow();
-
     rctxFree(&rctx);
+
+    CloseWindow();
 
     clReleaseProgram(prog);
     clReleaseKernel(render_kernel);
     CL_DataFree(&cl);
+
+    free(clay_mem);
 }

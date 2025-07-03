@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <CL/cl.h>
+#include "clay.h"
 #include "raylib.h"
 
 #include "clinit.h"
@@ -26,5 +27,7 @@ Texture2D rctxGetSurface(RenderingContext *ctx);
 
 void rctxRecalculateBufsize(RenderingContext *rctx);
 cl_int rctxResize(RenderingContext *ctx, size_t w, size_t h);
+
+void renderClayCommands(const Clay_RenderCommandArray *commands);
 
 #endif
