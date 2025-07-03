@@ -209,10 +209,14 @@ inline float discreteCompress(float r) {
     float pow_range = exp2(pow);
     float factor = r / pow_range - 1.0f;  
 
-    return factor * 0.7f + 0.3f;
+    float min_light = 0.4f;
+    float max_light = 0.6f;
+
+    return factor * (max_light - min_light) + min_light;
 }
 
 inline float continuousCompress(float r) {
+    /*
     float min_light = 0.05f;
     float max_light = 0.90f;
 
@@ -220,18 +224,30 @@ inline float continuousCompress(float r) {
     float q = 10.0f;
     float c = 0.5f;
 
-    /*
     const float max_l = 0.95f;
     const float threshold = 0.01f;
     const float steepness = 0.1f;
 
     return max_l - exp((r + (1.0f - max_l) - threshold) * -steepness);
-    */
+    
 
     float s = tanh(r);
     float f = c * sqrt(q * r);
     float g = 1.0f - exp(-p * r);
     return (f * (1.0f - s) + g * s) * (max_light - min_light) + min_light;
+    */
+
+    const float p = 10.0f;
+    const float q = 1.94f;
+    const float l = 1.0f;
+    const float s = 3.0f;
+    const float mi = 0.5f;
+    const float ma = 0.95f;
+
+    float f = (1.0f - exp(-r / p)) * (ma - mi) + mi;
+    float g = sqrt(r) / q;
+    float a = tanh(6.0f * (r - l) / s) / 2.0f + 0.5f;
+    return g * (1.0f - a) + f * a;
 }
 
 inline float3 discreteColorFn(complex z) {
@@ -241,7 +257,7 @@ inline float3 discreteColorFn(complex z) {
     float hue = fmod(fmod(degrees(arg), 360.0f) + 360.0f, 360.0f);
     float lig = discreteCompress(mod);
 
-    return hsvToRgb((float3)(hue, 1, lig));
+    return hslToRgb((float3)(hue, 1, lig));
 }
 
 inline float3 continuousColorFn(complex z) {
