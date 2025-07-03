@@ -28,10 +28,7 @@ include_directories("include")
 
 # Clay setup
 include_directories("external/clay")
-add_library(clay STATIC "external/clay/clay.h")
-target_compile_definitions(clay PUBLIC CLAY_IMPLEMENTATION)
-set_target_properties(clay PROPERTIES LANGUAGE C)
-set_target_properties(clay PROPERTIES LINKER_LANGUAGE C)
+add_library(clay STATIC "external/clay.c")
 
 add_subdirectory("external/ctl")
 add_subdirectory("external/raylib")
@@ -42,4 +39,4 @@ file(GLOB_RECURSE EXEC_SOURCES src/**.c)
 add_executable(unperplex_exec ${EXEC_SOURCES})
 target_compile_definitions(unperplex_exec PRIVATE CL_TARGET_OPENCL_VERSION=300)
 target_link_libraries(unperplex_exec PRIVATE OpenCL raylib ctl_static m clay)
-set_target_properties(unperplex_exec PROPERTIES OUTPUT_NAME "unperplexed")
+set_target_properties(unperplex_exec PROPERTIES OUTPUT_NAME "unperplex")
