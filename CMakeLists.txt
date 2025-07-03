@@ -26,6 +26,13 @@ endif ()
 
 include_directories("include")
 
+# Clay setup
+include_directories("clay")
+add_library(clay STATIC "clay/clay.h")
+add_compile_definitions(CLAY_IMPLEMENTATION)
+set_target_properties(clay PROPERTIES LANGUAGE C)
+set_target_properties(clay PROPERTIES LINKER_LANGUAGE C)
+
 add_subdirectory("ctl")
 
 file(GLOB_RECURSE EXEC_SOURCES src/**.c)

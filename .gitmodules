@@ -1,3 +1,6 @@
 [submodule "ctl"]
 	path = ctl
 	url = https://github.com/tikoko23/ctl.git
+[submodule "clay"]
+	path = clay
+	url = https://github.com/nicbarker/clay.git
