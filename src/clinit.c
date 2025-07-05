@@ -21,7 +21,7 @@ cl_int getCLContext(CL_Data *out, CL_ContextOptions opt) {
         opt.err_callback = errCallback;
     }
 
-    out->context = clCreateContext(opt.ctx_properties, 1, &out->device, opt.err_callback, NULL, &err);
+    out->context = clCreateContext(opt.ctx_properties, 1, &out->device, opt.err_callback, opt.err_callback_userdata, &err);
     if (!out->context) {
         return err;
     }

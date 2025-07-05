@@ -22,6 +22,7 @@ typedef void (*CL_ErrorCallback)(const char *, const void *, size_t, void *);
 typedef struct {
     cl_device_type device_type;
     CL_ErrorCallback err_callback;
+    void *err_callback_userdata;
     const cl_context_properties *ctx_properties;
     const cl_queue_properties *queue_properties;
 } CL_ContextOptions;
