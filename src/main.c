@@ -84,6 +84,8 @@ int main(void) {
     reloadUi();
 
     Unperplex U = unperplexNew();
+    unperplexInitCL(&U, (CL_ContextOptions) {});
+    unperplexInitWindow(&U);
 
     cl_int err;
     cl_program prog = NULL;
@@ -154,5 +156,6 @@ int main(void) {
         EndDrawing();
     }
 
+    unperplexDeinitWindow(&U);
     unperplexFree(&U);
 }
