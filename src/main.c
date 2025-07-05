@@ -56,10 +56,6 @@ static cl_int loadDefaultProgram(CL_Data *cl, cl_program *prog, cl_kernel *kerne
     return CL_SUCCESS;
 }
 
-static void clayErrHandler(Clay_ErrorData err) {
-    fprintf(stderr, "Clay: %.*s\n", err.errorText.length, err.errorText.chars);
-}
-
 static Clay_RenderCommandArray (*ui_update)(Unperplex *U);
 static void *ui_so_handle = NULL;
 
@@ -87,55 +83,21 @@ static void reloadUi(void) {
 int main(void) {
     reloadUi();
 
-    const size_t target_width = 640;
-    const size_t target_height = 480;
-
-    size_t clay_memsize = Clay_MinMemorySize(); 
-    void *clay_mem = malloc(clay_memsize);
-    Clay_Arena clay_arena = Clay_CreateArenaWithCapacityAndMemory(clay_memsize, clay_mem);
-    Clay_Initialize(clay_arena, (Clay_Dimensions) { target_width, target_height }, (Clay_ErrorHandler) { clayErrHandler });
+    Unperplex U = unperplexNew();
 
     cl_int err;
-    CL_Data cl;
-    CL_ContextOptions ctx_opt = {
-        .device_type = CL_DEVICE_TYPE_GPU,
-    };
-
-    if ((err = getCLContext(&cl, ctx_opt))) {
-        fprintf(stderr, "OpenCL: failed to create context: %d\n", err);
-        return 1;
-    }
-
-    char *device_name = getCLDeviceString(cl.device, CL_DEVICE_NAME);
-    char *cl_version = getCLDeviceString(cl.device, CL_DEVICE_VERSION);
-
-    printf("Chosen device: %s\n", device_name);
-    printf("Using %s\n", cl_version);
-
-    free(device_name);
-    free(cl_version);
-
     cl_program prog = NULL;
     cl_kernel render_kernel = NULL;
-    if ((err = loadDefaultProgram(&cl, &prog, &render_kernel))) {
+    if ((err = loadDefaultProgram(&U.cl, &prog, &render_kernel))) {
         fprintf(stderr, "OpenCL: %d\n", err);
         return 1;
     }
 
-    SetTraceLogLevel(LOG_WARNING);
-
-    InitWindow(target_width, target_height, "idk");
-    SetWindowState(FLAG_WINDOW_RESIZABLE);
-    SetTargetFPS(144);
-
-    Unperplex U = {
-        .clay_ctx = Clay_GetCurrentContext(),
-        .graph = {
-            .rctx = rctxNew(&cl, 640, 480),
-            .scale = 1.0f,
-            .render = render_kernel,
-            .prog = prog,
-        },
+    U.graph = (ComplexGraph) {
+        .rctx = rctxNew(&U.cl, 640, 480),
+        .scale = 1.0f,
+        .render = render_kernel,
+        .prog = prog,
     };
 
     float movement_speed = 32.0f;
@@ -192,10 +154,5 @@ int main(void) {
         EndDrawing();
     }
 
-    complexGraphFree(&U.graph);
-
-    CloseWindow();
-    CL_DataFree(&cl);
-
-    free(clay_mem);
+    unperplexFree(&U);
 }

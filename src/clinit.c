@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "clinit.h"
+#include "ctl/alloc.h"
 
 static void errCallback(const char* errinfo, const void* private_info, size_t cb, void* user_data) {
     fprintf(stderr, "\x1b[91mCL Error: %s\x1b[0m\n", errinfo);
@@ -34,11 +35,14 @@ cl_int getCLContext(CL_Data *out, CL_ContextOptions opt) {
     return CL_SUCCESS;
 }
 
-char *getCLDeviceString(cl_device_id device, cl_device_info info_type) {
+char *getCLDeviceString(TArena *arena, cl_device_id device, cl_device_info info_type) {
     size_t info_len;
     clGetDeviceInfo(device, info_type, 0, NULL, &info_len);
 
-    char *device_info = malloc(info_len + 1);
+    char *device_info = tarenaAlloc(arena, info_len + 1);
+    if (!device_info) {
+        return NULL;
+    }
 
     clGetDeviceInfo(device, info_type, info_len, device_info, NULL);
     device_info[info_len] = '\0';

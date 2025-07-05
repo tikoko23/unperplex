@@ -4,6 +4,10 @@
 #include <CL/cl.h>
 #include <CL/cl_platform.h>
 
+#include "ctl/alloc.h"
+
+#define getCLDeviceInfo(dev, info_type, var) clGetDeviceInfo(dev, info_type, sizeof var, &(var), NULL)
+
 #define setKernelArg(kernel, idx, var) clSetKernelArg(kernel, idx, sizeof var, &(var))
 
 typedef struct {
@@ -23,7 +27,7 @@ typedef struct {
 } CL_ContextOptions;
 
 cl_int getCLContext(CL_Data *out, CL_ContextOptions opt);
-char *getCLDeviceString(cl_device_id device, cl_device_info info_type);
+char *getCLDeviceString(TArena *arena, cl_device_id device, cl_device_info info_type);
 
 void CL_DataFree(CL_Data *this);
 
