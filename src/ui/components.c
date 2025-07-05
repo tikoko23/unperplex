@@ -1,5 +1,5 @@
-#include "components.h"
 #include "graph.h"
+#include "ui/components.h"
 
 void COMPONENT(ComplexGraph, ComplexGraph *graph) {
     CLAY({

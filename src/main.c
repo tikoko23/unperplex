@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -9,10 +8,18 @@
 #include "clay.h"
 
 #include "clinit.h"
-#include "components.h"
 #include "graph.h"
 #include "program.h"
 #include "render.h"
+#include "ui/layout.h"
+#include "unperplex.h"
+
+#if defined(UI_LAYOUT_H) && defined(__unix__)
+#  include <dlfcn.h>
+#  define HOT_RELOADING 1
+#else
+#  define HOT_RELOADING 0
+#endif
 
 static Vector2 globalMousePos(cl_float2 offset, cl_uint window_width, cl_uint window_height, float scale) {
     Vector2 mouse = GetMousePosition();
@@ -53,7 +60,33 @@ static void clayErrHandler(Clay_ErrorData err) {
     fprintf(stderr, "Clay: %.*s\n", err.errorText.length, err.errorText.chars);
 }
 
+static Clay_RenderCommandArray (*ui_update)(Unperplex *U);
+static void *ui_so_handle = NULL;
+
+static void reloadUi(void) {
+#if !HOT_RELOADING
+    ui_update = uiCalculateLayout;
+#else
+    if (ui_so_handle) {
+        dlclose(ui_so_handle);
+    }
+
+    ui_so_handle = dlopen("build/libunperplex_ui.so", RTLD_NOW);
+    if (!ui_so_handle) {
+        fprintf(stderr, "dlopen: %s\n", dlerror());
+    }
+
+    ui_update = dlsym(ui_so_handle, "uiCalculateLayout");
+    if (!ui_update) {
+        fprintf(stderr, "dlsym: %s\n", dlerror());
+    }
+
+#endif
+}
+
 int main(void) {
+    reloadUi();
+
     const size_t target_width = 640;
     const size_t target_height = 480;
 
@@ -95,11 +128,14 @@ int main(void) {
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetTargetFPS(144);
 
-    ComplexGraph graph = {
-        .rctx = rctxNew(&cl, 640, 480),
-        .scale = 1.0f,
-        .render = render_kernel,
-        .prog = prog,
+    Unperplex U = {
+        .clay_ctx = Clay_GetCurrentContext(),
+        .graph = {
+            .rctx = rctxNew(&cl, 640, 480),
+            .scale = 1.0f,
+            .render = render_kernel,
+            .prog = prog,
+        },
     };
 
     float movement_speed = 32.0f;
@@ -107,14 +143,22 @@ int main(void) {
 
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_F5)) {
-            if ((err = loadDefaultProgram(&cl, &prog, &render_kernel))) {
+            puts("Reloading GPU program...");
+
+            if ((err = loadDefaultProgram(&U.graph.rctx.cl, &U.graph.prog, &U.graph.render))) {
                 fprintf(stderr, "OpenCL: %d\n", err);
                 break;
             }
         }
 
+        if (IsKeyPressed(KEY_F3)) {
+            puts("Reloading UI...");
+
+            reloadUi();
+        }
+
         if (IsKeyPressed(KEY_M)) {
-            complexGraphCycleMode(&graph, 1);
+            complexGraphCycleMode(&U.graph, 1);
         }
 
         Vector2 smooth_translation = getVectorInput(KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_UP);
@@ -126,31 +170,21 @@ int main(void) {
             )
         );
 
-        complexGraphTranslate(&graph, smooth_translation, true);
-        complexGraphTranslate(&graph, snap_translation, false);
+        complexGraphTranslate(&U.graph, smooth_translation, true);
+        complexGraphTranslate(&U.graph, snap_translation, false);
 
         cl_uint window_width = GetScreenWidth();
         cl_uint window_height = GetScreenHeight();
 
         float key_zoom = (IsKeyDown(KEY_X) - IsKeyDown(KEY_Z)) * zoom_speed * GetFrameTime();
         float dzoom = (key_zoom + GetMouseWheelMove()) * 0.1f;
-        complexGraphZoomBy(&graph, dzoom);
+        complexGraphZoomBy(&U.graph, dzoom);
 
         if (IsWindowResized()) {
-            complexGraphResizeOutput(&graph, window_width, window_height);
+            complexGraphResizeOutput(&U.graph, window_width, window_height);
         }
 
-        Clay_SetLayoutDimensions((Clay_Dimensions) { window_width, window_height });
-        Clay_SetPointerState((Clay_Vector2) { GetMouseX(), GetMouseY() }, IsMouseButtonDown(MOUSE_BUTTON_LEFT));
-        Clay_UpdateScrollContainers(false, (Clay_Vector2) { GetMouseWheelMoveV().x, GetMouseWheelMoveV().y }, GetFrameTime());
-
-        Clay_BeginLayout();
-
-        CLAY() {
-            COMPONENT(ComplexGraph, &graph);
-        }
-
-        Clay_RenderCommandArray commands = Clay_EndLayout();
+        Clay_RenderCommandArray commands = ui_update(&U);
 
         BeginDrawing();
         ClearBackground(BLACK);
@@ -158,7 +192,7 @@ int main(void) {
         EndDrawing();
     }
 
-    complexGraphFree(&graph);
+    complexGraphFree(&U.graph);
 
     CloseWindow();
     CL_DataFree(&cl);

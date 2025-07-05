@@ -4,12 +4,12 @@
 
 #include <CL/cl.h>
 #include "clay.h"
-#include "components.h"
-#include "graph.h"
 #include "raylib.h"
 
-#include "render.h"
 #include "clinit.h"
+#include "graph.h"
+#include "render.h"
+#include "ui/components.h"
 
 #define N_CHANNELS 3
 
