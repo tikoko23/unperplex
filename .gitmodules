@@ -1,6 +1,7 @@
 [submodule "ctl"]
 	path = external/ctl
 	url = https://github.com/tikoko23/ctl.git
+	branch = main
 [submodule "clay"]
 	path = clay
 	url = https://github.com/nicbarker/clay.git

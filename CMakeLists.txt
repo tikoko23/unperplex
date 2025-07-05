@@ -37,6 +37,7 @@ include_directories("external/clay")
 add_library(clay SHARED "external/clay.c")
 
 add_subdirectory("external/ctl" EXCLUDE_FROM_ALL)
+include_directories("external/ctl/include")
 
 set(BUILD_SHARED_LIBS ON)
 add_subdirectory("external/raylib" EXCLUDE_FROM_ALL)
