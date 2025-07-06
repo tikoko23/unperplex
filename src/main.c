@@ -8,18 +8,12 @@
 #include "clay.h"
 
 #include "clinit.h"
+#include "def.h"
 #include "graph.h"
 #include "program.h"
 #include "render.h"
 #include "ui/layout.h"
 #include "unperplex.h"
-
-#if defined(UI_LAYOUT_H) && defined(__unix__)
-#  include <dlfcn.h>
-#  define HOT_RELOADING 1
-#else
-#  define HOT_RELOADING 0
-#endif
 
 static Vector2 globalMousePos(cl_float2 offset, cl_uint window_width, cl_uint window_height, float scale) {
     Vector2 mouse = GetMousePosition();
@@ -60,7 +54,7 @@ static Clay_RenderCommandArray (*ui_update)(Unperplex *U);
 static void *ui_so_handle = NULL;
 
 static void reloadUi(void) {
-#if !HOT_RELOADING
+#if !UNPERPLEX_UI_HOT_RELOADING
     ui_update = uiCalculateLayout;
 #else
     if (ui_so_handle) {

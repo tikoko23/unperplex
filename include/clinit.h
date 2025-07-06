@@ -1,5 +1,5 @@
-#ifndef CL_INIT_H
-#define CL_INIT_H
+#ifndef UNPERPLEX_CL_INIT_H
+#define UNPERPLEX_CL_INIT_H
 
 #include <CL/cl.h>
 #include <CL/cl_platform.h>

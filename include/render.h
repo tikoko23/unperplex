@@ -1,5 +1,5 @@
-#ifndef RENDER_H
-#define RENDER_H
+#ifndef UNPERPLEX_RENDER_H
+#define UNPERPLEX_RENDER_H
 
 #include <stdint.h>
 

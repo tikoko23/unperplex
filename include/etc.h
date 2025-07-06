@@ -1,5 +1,5 @@
-#ifndef ETC_H
-#define ETC_H
+#ifndef UNPERPLEX_ETC_H
+#define UNPERPLEX_ETC_H
 
 #include "raylib.h"
 

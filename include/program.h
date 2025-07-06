@@ -1,5 +1,5 @@
-#ifndef PROGRAM_H
-#define PROGRAM_H
+#ifndef UNPERPLEX_PROGRAM_H
+#define UNPERPLEX_PROGRAM_H
 
 #include <stddef.h>
 

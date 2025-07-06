@@ -23,9 +23,9 @@ if (USE_UBSAN)
 endif ()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    add_compile_definitions("DEBUG=1")
+    add_compile_definitions("UNPERPLEX_DEBUG=1")
 else ()
-    add_compile_definitions("DEBUG=0")
+    add_compile_definitions("UNPERPLEX_DEBUG=0")
 endif ()
 
 add_compile_definitions(CL_TARGET_OPENCL_VERSION=300)
@@ -60,7 +60,7 @@ else ()
     endforeach ()
 
     add_library(unperplex_ui SHARED ${UI_SOURCES})
-    target_compile_definitions(unperplex_ui PRIVATE "UI_HOT_RELOADING")
+    add_compile_definitions("UNPERPLEX_UI_HOT_RELOADING")
 endif ()
 
 add_executable(unperplex_exec ${EXEC_SOURCES})

@@ -1,5 +1,5 @@
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef UNPERPLEX_GRAPH_H
+#define UNPERPLEX_GRAPH_H
 
 #include "render.h"
 
