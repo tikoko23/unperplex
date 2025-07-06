@@ -3,6 +3,7 @@
 #include "render.h"
 
 #include "graph.h"
+#include "program.h"
 
 void complexGraphTranslate(ComplexGraph *this, Vector2 d_offset, bool smooth) {
     if (!smooth) {
@@ -32,6 +33,34 @@ cl_int complexGraphResizeOutput(ComplexGraph *this, size_t w, size_t h) {
 
 Texture2D complexGraphGetSurface(const ComplexGraph *this) {
     return this->rctx.gpu_ref;
+}
+
+cl_int complexGraphReloadProgram(ComplexGraph *this) {
+    cl_int err;
+    if (this->render != NULL) {
+        clReleaseKernel(this->render);
+    }
+
+    if (this->prog != NULL) {
+        clReleaseProgram(this->prog);
+    }
+
+    if ((err = loadProgramFromFile(&this->rctx.cl, &this->prog, "cl/complex_fn.cl"))) {
+        return err;
+    }
+
+    if ((err = clBuildProgram(this->prog, 1, &this->rctx.cl.device, NULL, NULL, NULL))) {
+        clReleaseProgram(this->prog);
+        return err;
+    }
+
+    this->render = clCreateKernel(this->prog, "funcRender", &err);
+    if (this->render == NULL) {
+        clReleaseProgram(this->prog);
+        return err;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int complexGraphRenderFrame(ComplexGraph *this) {

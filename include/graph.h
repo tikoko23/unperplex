@@ -27,6 +27,7 @@ cl_int complexGraphResizeOutput(ComplexGraph *this, size_t w, size_t h);
 
 Texture2D complexGraphGetSurface(const ComplexGraph *this);
 
+cl_int complexGraphReloadProgram(ComplexGraph *this);
 cl_int complexGraphRenderFrame(ComplexGraph *this);
 
 void complexGraphFree(ComplexGraph *this);
