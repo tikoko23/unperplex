@@ -1,11 +1,13 @@
 #include <CL/cl.h>
 #include <stdio.h>
 
-#include "clinit.h"
-#include "unperplex.h"
 #include "ctl/alloc.h"
 
+#include "clinit.h"
+#include "unperplex.h"
+
 #define DEVICE_INFO_ARENA_SIZE 2048
+#define FRAME_ARENA_SIZE (1024 * 1024)
 #define DEFAULT_WIDTH 640
 #define DEFAULT_HEIGHT 480
 
@@ -21,6 +23,8 @@ Unperplex unperplexNew(void) {
 
     Clay_Arena clay_arena = Clay_CreateArenaWithCapacityAndMemory(clay_memsize, U.clay_mem);
     U.clay_ctx = Clay_Initialize(clay_arena, (Clay_Dimensions) { DEFAULT_WIDTH, DEFAULT_HEIGHT }, (Clay_ErrorHandler) { clayErrHandler });
+
+    U.frame_arena = tarenaNew(FRAME_ARENA_SIZE);
 
     return U;
 }
@@ -68,9 +72,17 @@ void unperplexLogDeviceInfo(Unperplex *U) {
     tarenaFree(&strings);
 }
 
+int unperplexUpdate(Unperplex *U) {
+    tarenaReset(&U->frame_arena);
+
+    return 0;
+}
+
 void unperplexFree(Unperplex *U) {
     complexGraphFree(&U->graph);
 
     CL_DataFree(&U->cl);
     free(U->clay_mem);
+
+    tarenaFree(&U->frame_arena);
 }
