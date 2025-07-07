@@ -6,7 +6,7 @@
 #include "raylib.h"
 
 #define WANT_ANIM_TIME_CONVERSIONS
-#include "ui/animation.h"
+#include "animation.h"
 #include "ui/components.h"
 #include "ui/layout.h"
 

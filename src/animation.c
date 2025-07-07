@@ -1,6 +1,6 @@
 #include <math.h>
 
-#include "ui/animation.h"
+#include "animation.h"
 #include "raylib.h"
 
 #define now() ((TimePoint)(GetTime() * ANIMATION_DURATION_PER_SEC))
