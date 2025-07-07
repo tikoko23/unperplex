@@ -5,7 +5,6 @@
 #include "raymath.h"
 
 #include "graph.h"
-#include "render.h"
 #include "ui/components.h"
 
 void COMPONENT(ComplexGraph, ComplexGraph *graph) {

@@ -1,12 +1,20 @@
+#include <math.h>
+#include <stdint.h>
+
 #include "ctl/alloc.h"
 #include "ctl/str.h"
 #include "raylib.h"
 
+#define WANT_ANIM_TIME_CONVERSIONS
+#include "ui/animation.h"
 #include "ui/components.h"
-#include <stdint.h>
 #include "ui/layout.h"
 
 #define RAYLIB_MAX_MOUSE_BUTTON 6
+
+static Animation anim = {
+    .epoch = (clock_t)-1,
+};
 
 static void helloWorldCallback(MouseInteractionData data, void *userdata) {
     if (data.type != MOUSE_INTERACTION_CLICK
@@ -43,7 +51,7 @@ static void uiLayoutRoot(Unperplex *U) {
         }),
         .style = {
             .backgroundColor = { 0, 200, 0, 255 },
-            .cornerRadius = CLAY_CORNER_RADIUS(10),
+            .cornerRadius = CLAY_CORNER_RADIUS(animationQuery(&anim) * 20),
             .layout.padding = CLAY_PADDING_ALL(10),
         },
     };
@@ -92,7 +100,16 @@ static bool anyMouseButtonPressed(void) {
     return any_button_pressed;
 }
 
+static double ease(double t) {
+    return 0.5f - cos(2.0f * t * M_PI) / 2.0f;
+}
+
 Clay_RenderCommandArray uiCalculateLayout(Unperplex *U) {
+    if (anim.epoch == (clock_t)-1) {
+        anim = animationNew(ANIMATION_LOOP, ease, DUR_S(1));
+        animationScheduleFromNow(&anim, DUR_S(1));
+    }
+
     Clay_Context *old = Clay_GetCurrentContext();
     Clay_SetCurrentContext(U->clay_ctx);
 
