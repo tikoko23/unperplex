@@ -3,7 +3,9 @@
 #include <stdio.h>
 
 #include <CL/cl.h>
+#include <string.h>
 #include "clay.h"
+#include "ctl/str.h"
 #include "raylib.h"
 
 #include "clinit.h"
@@ -120,6 +122,13 @@ static Color clayToRaylibColor(Clay_Color color) {
     return (Color) { color.r, color.g, color.b, color.a };
 }
 
+static TString text_buffer = {};
+
+void rendererClearCache(void) {
+    tstrFree(&text_buffer);
+    text_buffer = (TString) {};
+}
+
 void renderClayCommands(const Clay_RenderCommandArray *commands) {
     for (size_t i = 0; i < commands->length; ++i) {
         Clay_RenderCommand *command = commands->internalArray + i;
@@ -168,6 +177,16 @@ void renderClayCommands(const Clay_RenderCommandArray *commands) {
             }
 
             break;
+        case CLAY_RENDER_COMMAND_TYPE_TEXT: {
+            Clay_TextRenderData *data = &command->renderData.text;
+
+            tstrReserve(&text_buffer, data->stringContents.length + 1);
+            memcpy(text_buffer.data, data->stringContents.chars, data->stringContents.length);
+            text_buffer.data[data->stringContents.length] = '\0';
+
+            DrawText(text_buffer.data, bounds.x, bounds.y, data->fontSize, clayToRaylibColor(data->textColor));
+            break;
+        }
         }
         default:
             puts("bruh");

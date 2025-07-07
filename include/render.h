@@ -27,6 +27,7 @@ cl_int rctxRedrawBuffer(RenderingContext *ctx, cl_kernel kernel);
 void rctxRecalculateBufsize(RenderingContext *rctx);
 cl_int rctxResize(RenderingContext *ctx, size_t w, size_t h);
 
+void rendererClearCache(void);
 void renderClayCommands(const Clay_RenderCommandArray *commands);
 
 #endif

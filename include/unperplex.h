@@ -4,6 +4,7 @@
 #include "ctl/alloc.h"
 
 #include "clinit.h"
+#include "ctl/str.h"
 #include "graph.h"
 #include "render.h"
 
@@ -26,6 +27,8 @@ typedef enum {
     UNPERPLEX_OK = 0,
     UNPERPLEX_QUIT,
 } UnperplexStatus;
+
+void unperplexClearCache(void);
 
 Unperplex unperplexNew(void);
 

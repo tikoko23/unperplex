@@ -1,7 +1,9 @@
 #include <stdio.h>
 
 #include <CL/cl.h>
+#include <string.h>
 #include "ctl/alloc.h"
+#include "ctl/str.h"
 #include "raylib.h"
 #include "raymath.h"
 
@@ -42,6 +44,28 @@ static void reloadUi(Unperplex *U) {
 #endif
 }
 
+static TString text_buffer = {};
+
+static Clay_Dimensions measureText(Clay_StringSlice str, Clay_TextElementConfig *cfg, void *userdata) {
+    // TODO: handle large strings without messing up the stack
+    tstrReserve(&text_buffer, str.length + 1);
+    memcpy(text_buffer.data, str.chars, str.length);
+    text_buffer.data[str.length] = '\0';
+
+    int default_spacing = cfg->fontSize / GetFontDefault().baseSize;
+    Vector2 size = MeasureTextEx(GetFontDefault(), text_buffer.data, cfg->fontSize, default_spacing + cfg->letterSpacing);
+
+    return (Clay_Dimensions) {
+        .width = size.x,
+        .height = size.y,
+    };
+}
+
+void unperplexClearCache(void) {
+    tstrFree(&text_buffer);
+    text_buffer = (TString) {};
+}
+
 Unperplex unperplexNew(void) {
     Unperplex U = {};
 
@@ -52,6 +76,8 @@ Unperplex unperplexNew(void) {
     U.clay_ctx = Clay_Initialize(clay_arena, (Clay_Dimensions) { DEFAULT_WIDTH, DEFAULT_HEIGHT }, (Clay_ErrorHandler) { clayErrHandler });
 
     U.frame_arena = tarenaNew(FRAME_ARENA_SIZE);
+
+    Clay_SetMeasureTextFunction(measureText, NULL);
 
     reloadUi(&U);
 
