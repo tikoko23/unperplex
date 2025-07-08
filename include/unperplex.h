@@ -4,9 +4,9 @@
 #include "ctl/alloc.h"
 
 #include "clinit.h"
-#include "ctl/str.h"
 #include "graph.h"
 #include "render.h"
+#include "ui/ui.h"
 
 typedef struct Unperplex {
     void *clay_mem;
@@ -16,11 +16,8 @@ typedef struct Unperplex {
     TArena frame_arena;
 
     struct {
-        Clay_RenderCommandArray (*updater)(struct Unperplex *U);
-#if UNPERPLEX_UI_HOT_RELOADING
-        void *shared_lib_handle;
-#endif
-    } ui;
+        UIState ui;
+    };
 } Unperplex;
 
 typedef enum {

@@ -1,9 +1,10 @@
 #include <math.h>
 #include <stdint.h>
 
-#include "ctl/alloc.h"
 #include "ctl/str.h"
 #include "raylib.h"
+#include "ui/ui.h"
+#include "unperplex.h"
 
 #define WANT_ANIM_TIME_CONVERSIONS
 #include "animation.h"
@@ -37,39 +38,6 @@ static void buttonContents(void *userdata) {
 }
 
 static void uiLayoutRoot(Unperplex *U) {
-    ButtonOptions *opt = tarenaAlloc(&U->frame_arena, (sizeof *opt) * 2);
-    opt[0] = (ButtonOptions) {
-        .type = BUTTON_CONTENT_TEXT,
-        .interaction = {
-            .userdata = "hello world!",
-            .callback = helloWorldCallback,
-        },
-        .text = tsvNewFromL("button"),
-        .text_opt = CLAY_TEXT_CONFIG({
-            .textColor = { 255, 255, 255, 255 },
-            .fontSize = 40,
-        }),
-        .style = {
-            .backgroundColor = { 0, 200, 0, 255 },
-            .cornerRadius = CLAY_CORNER_RADIUS(animationQuery(&anim) * 20),
-            .layout.padding = CLAY_PADDING_ALL(10),
-        },
-    };
-
-    opt[1] = (ButtonOptions) {
-        .type = BUTTON_CONTENT_CUSTOM,
-        .interaction = {
-            .userdata = "idk",
-            .callback = helloWorldCallback,
-        },
-        .content = buttonContents,
-        .content_userdata = (void *)2,
-        .style = {
-            .backgroundColor = { 255, 0, 255, 100 },
-            .layout.padding = CLAY_PADDING_ALL(10),
-        }
-    };
-
     CLAY({
         .layout = {
             .layoutDirection = CLAY_TOP_TO_BOTTOM,
@@ -85,8 +53,37 @@ static void uiLayoutRoot(Unperplex *U) {
         },
     }) {
         // COMPONENT(ComplexGraph, &U->graph);
-        COMPONENT(Button, opt + 0);
-        COMPONENT(Button, opt + 1);
+        COMPONENT(Button, U, (ButtonOptions) {
+            .type = BUTTON_CONTENT_TEXT,
+            .interaction = {
+                .userdata = "hello world!",
+                .callback = helloWorldCallback,
+            },
+            .text = tsvNewFromL("button"),
+            .text_opt = CLAY_TEXT_CONFIG({
+                .textColor = { 255, 255, 255, 255 },
+                .fontSize = 40,
+            }),
+            .style = {
+                .backgroundColor = { 0, 200, 0, 255 },
+                .cornerRadius = CLAY_CORNER_RADIUS(animationQuery(&anim) * 20),
+                .layout.padding = CLAY_PADDING_ALL(10),
+            },
+        });
+
+        COMPONENT(Button, U, (ButtonOptions) {
+            .type = BUTTON_CONTENT_CUSTOM,
+            .interaction = {
+                .userdata = "idk",
+                .callback = helloWorldCallback,
+            },
+            .content = buttonContents,
+            .content_userdata = (void *)2,
+            .style = {
+                .backgroundColor = { 255, 0, 255, 100 },
+                .layout.padding = CLAY_PADDING_ALL(10),
+            }
+        });
     };
 }
 
@@ -119,6 +116,8 @@ Clay_RenderCommandArray uiCalculateLayout(Unperplex *U) {
     Clay_SetLayoutDimensions((Clay_Dimensions) { window_width, window_height });
     Clay_SetPointerState((Clay_Vector2) { GetMouseX(), GetMouseY() }, anyMouseButtonPressed());
     Clay_UpdateScrollContainers(false, (Clay_Vector2) { GetMouseWheelMoveV().x, GetMouseWheelMoveV().y }, GetFrameTime());
+
+    uiStateBeginLayout(&U->ui);
 
     Clay_BeginLayout();
     uiLayoutRoot(U);

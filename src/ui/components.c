@@ -1,13 +1,16 @@
 #include <stdint.h>
 
 #include "clay.h"
+#include "ctl/alloc.h"
 #include "raylib.h"
 #include "raymath.h"
 
 #include "graph.h"
+#include "ui/ui.h"
+#include "unperplex.h"
 #include "ui/components.h"
 
-void COMPONENT(ComplexGraph, ComplexGraph *graph) {
+void COMPONENT(ComplexGraph, Unperplex *U, ComplexGraph *graph) {
     CLAY({
         .userData = graph,
         .custom = { (void *)ELEMENT_COMPLEX_GRAPH },
@@ -54,19 +57,22 @@ static void forwardMouseInteraction(Clay_ElementId id, Clay_PointerData ptr, int
     interaction->callback(m_data, interaction->userdata);
 }
 
-void COMPONENT(Button, ButtonOptions *opt) {
-    CLAY(opt->style) {
-        Clay_OnHover(forwardMouseInteraction, (intptr_t)&opt->interaction);
+void COMPONENT(Button, Unperplex *U, ButtonOptions opt) {
+    CLAY(opt.style) {
+        MouseInteraction *interaction = tarenaAlloc(&U->ui.arena, sizeof *interaction);
+        *interaction = opt.interaction;
 
-        switch (opt->type) {
+        Clay_OnHover(forwardMouseInteraction, (intptr_t)interaction);
+
+        switch (opt.type) {
         case BUTTON_CONTENT_CUSTOM:
-            opt->content(opt->content_userdata);
+            opt.content(opt.content_userdata);
             break;
         case BUTTON_CONTENT_TEXT:
             CLAY_TEXT(((Clay_String) {
-                .chars = opt->text.data,
-                .length = opt->text.length,
-            }), opt->text_opt);
+                .chars = opt.text.data,
+                .length = opt.text.length,
+            }), opt.text_opt);
             break;
         }
     }

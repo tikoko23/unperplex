@@ -53,7 +53,8 @@ else ()
     set(MAIN_SOURCES)
 
     foreach (filename IN LISTS ALL_C_FILES)
-        if (NOT filename MATCHES "src/ui/.*\\.c")
+        if (NOT filename MATCHES "src/ui/components.c"
+        AND NOT filename MATCHES "src/ui/layout.c")
             list(APPEND MAIN_SOURCES ${filename})
         elseif (NOT filename MATCHES "src/main.c")
             list(APPEND UI_SOURCES ${filename})

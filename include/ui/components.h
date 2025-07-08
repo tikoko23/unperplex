@@ -5,6 +5,8 @@
 #include "ctl/str.h"
 
 #include "graph.h"
+#include "ui/ui.h"
+#include "unperplex.h"
 
 #define COMPONENT(name, ...) __COMPONENT_ ## name ## __(__VA_ARGS__)
 
@@ -59,7 +61,7 @@ typedef struct {
     ButtonContentType type;
 } ButtonOptions;
 
-void COMPONENT(ComplexGraph, ComplexGraph *graph);
-void COMPONENT(Button, ButtonOptions *opt);
+void COMPONENT(ComplexGraph, Unperplex *U, ComplexGraph *graph);
+void COMPONENT(Button, Unperplex *U, ButtonOptions opt);
 
 #endif
