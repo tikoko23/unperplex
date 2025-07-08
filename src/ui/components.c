@@ -6,14 +6,22 @@
 #include "raymath.h"
 
 #include "graph.h"
+#include "ui/decl/custom.h"
 #include "ui/ui.h"
 #include "unperplex.h"
 #include "ui/components.h"
 
 void COMPONENT(ComplexGraph, Unperplex *U, ComplexGraph *graph) {
+    CustomElement *g = tarenaAlloc(&U->ui.arena, sizeof *g);
+
+    *g = (CustomElement) {
+        .type = ELEMENT_COMPLEX_GRAPH,
+        .graph = graph,
+    };
+
     CLAY({
         .userData = graph,
-        .custom = { (void *)ELEMENT_COMPLEX_GRAPH },
+        .custom = { g },
         .layout.sizing = {
             .width = graph->rctx.width,
             .height = graph->rctx.height,

@@ -52,7 +52,7 @@ static void uiLayoutRoot(Unperplex *U) {
             },
         },
     }) {
-        // COMPONENT(ComplexGraph, &U->graph);
+        // COMPONENT(ComplexGraph, U, &U->graph);
         COMPONENT(Button, U, (ButtonOptions) {
             .type = BUTTON_CONTENT_TEXT,
             .interaction = {

@@ -1,9 +1,9 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <CL/cl.h>
-#include <string.h>
 #include "clay.h"
 #include "ctl/str.h"
 #include "raylib.h"
@@ -12,6 +12,7 @@
 #include "graph.h"
 #include "render.h"
 #include "ui/components.h"
+#include "ui/decl/custom.h"
 
 #define N_CHANNELS 3
 
@@ -161,15 +162,16 @@ void renderClayCommands(const Clay_RenderCommandArray *commands) {
             EndScissorMode();
             break;
         case CLAY_RENDER_COMMAND_TYPE_CUSTOM: {
-            switch ((uintptr_t)command->renderData.custom.customData) {
+            CustomElement *el = command->renderData.custom.customData;
+
+            switch (el->type) {
             case ELEMENT_COMPLEX_GRAPH: {
-                ComplexGraph *graph = command->userData;
-                cl_int err = complexGraphRenderFrame(graph);
+                cl_int err = complexGraphRenderFrame(el->graph);
                 if (err) {
                     fprintf(stderr, "OpenCL: %d\n", err);
                     DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, RED);
                 } else {
-                    DrawTexture(complexGraphGetSurface(graph), bounds.x, bounds.y, WHITE);
+                    DrawTexture(complexGraphGetSurface(el->graph), bounds.x, bounds.y, WHITE);
                 }
 
                 break;
