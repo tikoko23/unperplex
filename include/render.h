@@ -9,7 +9,7 @@
 
 #include "clinit.h"
 
-typedef struct {
+typedef struct RenderingContext {
     size_t width;
     size_t height;
     size_t bufsize;

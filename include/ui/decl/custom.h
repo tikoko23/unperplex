@@ -3,11 +3,11 @@
 
 #include "graph.h"
 
-typedef enum {
+typedef enum CustomElementType {
     ELEMENT_COMPLEX_GRAPH = 1,
 } CustomElementType;
 
-typedef struct {
+typedef struct CustomElement {
     CustomElementType type;
 
     union {

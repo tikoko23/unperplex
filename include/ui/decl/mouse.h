@@ -3,14 +3,14 @@
 
 #include "raylib.h"
 
-typedef enum {
+typedef enum MouseInteractionType {
     MOUSE_INTERACTION_CLICK,
     MOUSE_INTERACTION_RELEASE,
     MOUSE_INTERACTION_HOLD,
     MOUSE_INTERACTION_HOVER,
 } MouseInteractionType;
 
-typedef struct {
+typedef struct MouseInteractionData {
     MouseInteractionType type;
     Vector2 element_size;
     Vector2 relative_pos;
@@ -20,7 +20,7 @@ typedef struct {
 
 typedef void (*MouseInteractionCallback)(MouseInteractionData interaction, void *userdata);
 
-typedef struct {
+typedef struct MouseInteraction {
     MouseInteractionCallback callback;
     void *userdata;
 } MouseInteraction;

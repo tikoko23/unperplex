@@ -10,7 +10,7 @@
 
 #define setKernelArg(kernel, idx, var) clSetKernelArg(kernel, idx, sizeof var, &(var))
 
-typedef struct {
+typedef struct CL_Data {
     cl_platform_id platform;
     cl_device_id device;
     cl_context context;
@@ -19,7 +19,7 @@ typedef struct {
 
 typedef void (*CL_ErrorCallback)(const char *, const void *, size_t, void *);
 
-typedef struct {
+typedef struct CL_ContextOptions {
     cl_device_type device_type;
     CL_ErrorCallback err_callback;
     void *err_callback_userdata;

@@ -6,7 +6,7 @@
 
 struct Unperplex;
 
-typedef struct {
+typedef struct UIState {
     TArena arena;
 
     Clay_RenderCommandArray (*updater)(struct Unperplex *U);

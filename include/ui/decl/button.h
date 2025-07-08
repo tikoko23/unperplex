@@ -6,14 +6,14 @@
 
 #include "mouse.h"
 
-typedef enum {
+typedef enum ButtonContentType {
     BUTTON_CONTENT_TEXT,
     BUTTON_CONTENT_CUSTOM,
 } ButtonContentType;
 
 typedef void (*ButtonContentCallback)(void *userdata);
 
-typedef struct {
+typedef struct ButtonOptions {
     MouseInteraction interaction;
     Clay_ElementDeclaration style;
 

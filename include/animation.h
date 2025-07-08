@@ -9,12 +9,12 @@ typedef int64_t Duration;
 typedef int64_t TimePoint;
 typedef double (*EaseFunction)(double t);
 
-typedef enum {
+typedef enum AnimationKind {
     ANIMATION_LOOP,
     ANIMATION_ONCE,
 } AnimationKind;
 
-typedef struct {
+typedef struct Animation {
     TimePoint epoch;
     Duration duration;
     EaseFunction ease;

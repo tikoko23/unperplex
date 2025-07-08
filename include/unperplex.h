@@ -20,7 +20,7 @@ typedef struct Unperplex {
     };
 } Unperplex;
 
-typedef enum {
+typedef enum UnperplexStatus {
     UNPERPLEX_OK = 0,
     UNPERPLEX_QUIT,
 } UnperplexStatus;

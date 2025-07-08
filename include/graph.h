@@ -3,13 +3,13 @@
 
 #include "render.h"
 
-typedef enum {
+typedef enum ComplexGraphRenderMode {
     GRAPH_RENDER_CONTINUOUS = 0,
     GRAPH_RENDER_DISCRETE,
     GRAPH_RENDER_N_MODES,
 } ComplexGraphRenderMode;
 
-typedef struct {
+typedef struct ComplexGraph {
     RenderingContext rctx;
     ComplexGraphRenderMode mode;
     cl_program prog;
